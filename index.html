@@ -295,7 +295,16 @@
 
     /* ------------------------------------------------------------ Lists */
     .lists { padding: 20px 0 0; }
-    .lists > .selbar:last-child { margin-bottom: 0; }
+    /* 보드: 완료를 제외한 미완료 그룹을 한 컨테이너로 묶고, 하단에 선택 바를 둔다 */
+    .board {
+      border: 1px solid var(--line);
+      border-radius: var(--radius-panel);
+      background: color-mix(in srgb, var(--surface) 45%, var(--bg));
+      padding: 16px 16px 0;
+      margin-bottom: 24px;
+    }
+    .board .allclear { margin-bottom: 16px; }
+    .board .group { margin-bottom: 16px; }
     .group { margin-bottom: 20px; }
     .group:last-child { margin-bottom: 0; }
     .group-head {
@@ -601,24 +610,24 @@
     .notice .btn { flex: none; align-self: center; }
     @media (max-width: 639px) {
       .notice { margin-top: 4px; margin-bottom: 8px; }
-      .selbar { bottom: calc(120px + env(safe-area-inset-bottom)); margin: 0 0 8px; }
+      .board { padding: 12px 12px 0; margin-bottom: 20px; }
+      .selbar { bottom: calc(120px + env(safe-area-inset-bottom)); margin: 0 -12px; }
     }
 
     /* 선택 액션 바: 목록 아래, 화면 하단에 고정(sticky). 체크(선택)된 항목이 있을 때만 '완료' 활성화 */
     .selbar {
       position: sticky;
-      bottom: 12px;
+      bottom: 0;
       z-index: 5;
       display: flex;
       align-items: center;
       justify-content: space-between;
       gap: 8px;
-      margin: 0 0 20px;
-      padding: 8px 8px 8px 14px;
-      border-radius: var(--radius);
-      border: 1px solid var(--line);
+      margin: 0 -16px;
+      padding: 10px 10px 10px 16px;
+      border-top: 1px solid var(--line);
+      border-radius: 0 0 var(--radius-panel) var(--radius-panel);
       background: var(--surface);
-      box-shadow: var(--shadow);
       font-size: 14px;
       font-weight: 600;
     }
@@ -1190,22 +1199,24 @@
       const allClear = activeCount === 0
         ? `<div class="allclear" style="view-transition-name: allclear">${icon('confetti')}남은 할 일이 없어요. 오늘도 수고했어요.</div>`
         : '';
-      const html = groups.map((g) => {
+      const groupHtml = (g) => {
         const isDone = g.key === 'done';
-        const slot = isDone ? '<div id="selbarSlot"></div>' : '';
         const action = isDone
           ? `<button type="button" class="text-btn" data-action="clear-done">완료 항목 지우기</button>`
           : '';
-        return `${slot}<section class="group" aria-labelledby="g-${g.key}">
+        return `<section class="group" aria-labelledby="g-${g.key}">
           <div class="group-head">
             <h2 class="group-title ${g.key === 'overdue' ? 'is-overdue' : isDone ? 'is-done' : ''}" id="g-${g.key}">${g.label} <span class="count">${g.tasks.length}</span></h2>
             ${action}
           </div>
           <ul class="tasks">${g.tasks.map(taskHtml).join('')}</ul>
         </section>`;
-      }).join('');
-      els.lists.innerHTML = allClear + html + (groups.some((g) => g.key === 'done') ? '' : '<div id="selbarSlot"></div>');
-      els.lists.querySelector('#selbarSlot').replaceWith(els.selbar); // 미완료 그룹 아래, 완료 그룹 위
+      };
+      const activeHtml = groups.filter((g) => g.key !== 'done').map(groupHtml).join('');
+      const doneHtml = groups.filter((g) => g.key === 'done').map(groupHtml).join('');
+      // 보드(미완료 그룹 + 선택 바) 와 완료 그룹을 분리
+      els.lists.innerHTML = `<div class="board" id="board" style="view-transition-name: board">${allClear}${activeHtml}<div id="selbarSlot"></div></div>${doneHtml}`;
+      els.lists.querySelector('#selbarSlot').replaceWith(els.selbar);
       if (cal.open && cal.anchor && !cal.anchor.isConnected) closeCalendar({ restoreFocus: false });
     }
 
