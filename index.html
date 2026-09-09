@@ -302,6 +302,8 @@
       background: color-mix(in srgb, var(--surface) 45%, var(--bg));
       padding: 16px 16px 0;
       margin-bottom: 24px;
+      /* overflow:hidden 은 sticky 를 깨므로 clip-path 로 모서리를 정리 */
+      clip-path: inset(0 round var(--radius-panel));
     }
     .board .allclear { margin-bottom: 16px; }
     .board .group { margin-bottom: 16px; }
@@ -628,7 +630,6 @@
       margin: 0 -16px;
       padding: 10px 10px 10px 16px;
       border-top: 1px solid var(--line);
-      border-radius: 0 0 var(--radius-panel) var(--radius-panel);
       background: var(--surface);
       font-size: 14px;
       font-weight: 600;
