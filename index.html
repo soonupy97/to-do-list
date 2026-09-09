@@ -601,7 +601,7 @@
       .selbar { top: 4px; margin-top: 8px; }
     }
 
-    /* 선택 액션 바: 체크(선택)된 항목이 있을 때만 나타나 '완료'로 확정 */
+    /* 선택 액션 바: 항상 노출. 체크(선택)된 항목이 있을 때만 '완료' 활성화 */
     .selbar {
       position: sticky;
       top: 8px;
@@ -618,10 +618,17 @@
       box-shadow: var(--shadow);
       font-size: 14px;
       font-weight: 600;
-      animation: cal-in 180ms var(--ease);
     }
     .selbar[hidden] { display: none; }
     .selbar-actions { display: flex; gap: 6px; }
+    .selbar .hint { color: var(--text-3); font-weight: 500; }
+    .selbar #selClear[hidden] { display: none; }
+    .btn:disabled {
+      cursor: not-allowed;
+      background: var(--surface-2);
+      color: var(--text-3);
+      transform: none;
+    }
     .task.is-selected { background: var(--accent-soft); }
     .task.is-selected:hover { background: var(--accent-soft); }
 
@@ -1155,8 +1162,11 @@
 
     function renderSelbar() {
       const n = state.selected.size;
-      els.selbar.hidden = n === 0;
-      els.selCount.textContent = n > 0 ? `${n}개 선택` : '';
+      els.selbar.hidden = state.tasks.length === 0; // 할 일이 하나도 없을 때만 숨김
+      els.selCount.textContent = n > 0 ? `${n}개 선택` : '할 일을 체크한 뒤 완료를 누르세요';
+      els.selCount.classList.toggle('hint', n === 0);
+      els.selClear.hidden = n === 0;
+      els.selDone.disabled = n === 0;
     }
 
     function renderLists() {
