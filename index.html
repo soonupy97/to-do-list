@@ -47,7 +47,9 @@
       --accent-soft: #e4efe8;
       --on-accent: #f7f7f5;
       --danger: #b4432f;
+      --danger-hover: #9c3826;
       --danger-soft: #f6e6e2;
+      --on-danger: #fbf3f1;
       --shadow: 0 1px 2px rgba(29, 29, 27, .05), 0 10px 30px rgba(29, 29, 27, .07);
       --shadow-up: 0 -8px 24px rgba(29, 29, 27, .06);
       --ring: 0 0 0 3px rgba(47, 111, 78, .28);
@@ -77,7 +79,9 @@
       --accent-soft: #1f3128;
       --on-accent: #10201a;
       --danger: #e5836f;
+      --danger-hover: #ee9a88;
       --danger-soft: #3a2420;
+      --on-danger: #2a1410;
       --shadow: 0 1px 2px rgba(0, 0, 0, .3), 0 10px 30px rgba(0, 0, 0, .35);
       --shadow-up: 0 -8px 24px rgba(0, 0, 0, .35);
       --ring: 0 0 0 3px rgba(124, 196, 160, .35);
@@ -102,7 +106,9 @@
         --accent-soft: #1f3128;
         --on-accent: #10201a;
         --danger: #e5836f;
+        --danger-hover: #ee9a88;
         --danger-soft: #3a2420;
+        --on-danger: #2a1410;
         --shadow: 0 1px 2px rgba(0, 0, 0, .3), 0 10px 30px rgba(0, 0, 0, .35);
         --shadow-up: 0 -8px 24px rgba(0, 0, 0, .35);
         --ring: 0 0 0 3px rgba(124, 196, 160, .35);
@@ -461,6 +467,44 @@
     .btn-primary:hover { background: var(--accent-hover); }
     .btn-ghost { color: var(--text-2); }
     .btn-ghost:hover { background: var(--surface-2); color: var(--text); }
+    .btn-danger { background: var(--danger); color: var(--on-danger); }
+    .btn-danger:hover { background: var(--danger-hover); }
+
+    /* Confirm dialog: 되돌리기 어려운 일괄 삭제 전 확인 */
+    .confirm {
+      width: min(calc(100vw - 32px), 360px);
+      margin: auto;
+      padding: 20px 20px 16px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-panel);
+      background: var(--surface);
+      color: var(--text);
+      box-shadow: var(--shadow);
+    }
+    .confirm::backdrop { background: rgba(29, 29, 27, .36); }
+    .confirm[open] { animation: cal-in 180ms var(--ease); }
+    .confirm h2 {
+      margin: 0 0 6px;
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+    }
+    .confirm p {
+      margin: 0;
+      font-size: 14px;
+      color: var(--text-2);
+    }
+    .confirm-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+      margin-top: 18px;
+    }
+    .confirm-actions .btn { height: 40px; padding: 0 16px; }
+    @media (max-width: 639px) {
+      .confirm { margin: auto auto calc(16px + env(safe-area-inset-bottom)); }
+      .confirm-actions .btn { flex: 1; }
+    }
 
     /* Empty & all-clear states */
     .empty {
@@ -810,6 +854,17 @@
     </div>
   </div>
 
+  <dialog class="confirm" id="confirm" aria-labelledby="confirmTitle" aria-describedby="confirmDesc">
+    <form method="dialog">
+      <h2 id="confirmTitle">완료 항목을 지울까요?</h2>
+      <p id="confirmDesc">지운 뒤 6초 안에는 되돌릴 수 있어요.</p>
+      <div class="confirm-actions">
+        <button type="submit" value="cancel" class="btn btn-ghost" id="confirmCancel">취소</button>
+        <button type="submit" value="ok" class="btn btn-danger" id="confirmOk">지우기</button>
+      </div>
+    </form>
+  </dialog>
+
   <div class="toast" id="toast" role="status" hidden>
     <span id="toastText"></span>
     <button type="button" id="undoBtn">되돌리기</button>
@@ -974,6 +1029,10 @@
       announce: $('#announce'),
       notice: $('#notice'),
       noticeDismiss: $('#noticeDismiss'),
+      confirm: $('#confirm'),
+      confirmTitle: $('#confirmTitle'),
+      confirmCancel: $('#confirmCancel'),
+      confirmOk: $('#confirmOk'),
     };
 
     const escapeHtml = (s) =>
@@ -1360,17 +1419,55 @@
       if (e.relatedTarget && !els.cal.contains(e.relatedTarget)) closeCalendar({ restoreFocus: false });
     });
 
+    /* ============================================================ Confirm dialog
+       네이티브 confirm() 대신 <dialog>. 취소가 기본 포커스, Esc/백드롭으로 닫힘. */
+    function askConfirm({ title, onConfirm, returnFocus }) {
+      const dlg = els.confirm;
+      els.confirmTitle.textContent = title;
+      const done = () => {
+        dlg.removeEventListener('close', done);
+        const ok = dlg.returnValue === 'ok';
+        dlg.returnValue = '';
+        if (ok) onConfirm();
+        else if (returnFocus && returnFocus.isConnected) returnFocus.focus();
+      };
+      dlg.addEventListener('close', done);
+      if (typeof dlg.showModal === 'function') dlg.showModal();
+      else dlg.setAttribute('open', '');
+      els.confirmCancel.focus();
+    }
+    els.confirm.addEventListener('click', (e) => {
+      if (e.target === els.confirm) { els.confirm.returnValue = 'cancel'; els.confirm.close(); }
+    });
+    // showModal 미지원 환경(구형 브라우저) 폴백: form submit으로 close 흉내
+    els.confirm.querySelector('form').addEventListener('submit', (e) => {
+      if (typeof els.confirm.showModal === 'function') return;
+      e.preventDefault();
+      els.confirm.returnValue = e.submitter ? e.submitter.value : 'cancel';
+      els.confirm.removeAttribute('open');
+      els.confirm.dispatchEvent(new Event('close'));
+    });
+
+    function clearDone() {
+      const ids = state.tasks.filter((t) => t.done).map((t) => t.id);
+      const removed = deleteTasks(ids);
+      showUndo(removed, `완료 항목 ${removed.length}개를 지웠어요.`);
+      commit({ focusEl: els.undoBtn });
+      announce(`완료 항목 ${removed.length}개를 지웠어요.`);
+    }
+
     /* ============================================================ Events: lists (delegated) */
     els.lists.addEventListener('click', (e) => {
       const btn = e.target.closest('[data-action]');
       if (!btn) return;
       const action = btn.dataset.action;
       if (action === 'clear-done') {
-        const ids = state.tasks.filter((t) => t.done).map((t) => t.id);
-        const removed = deleteTasks(ids);
-        showUndo(removed, `완료 항목 ${removed.length}개를 지웠어요.`);
-        commit({ focusEl: els.undoBtn });
-        announce(`완료 항목 ${removed.length}개를 지웠어요.`);
+        const count = state.tasks.filter((t) => t.done).length;
+        askConfirm({
+          title: `완료 항목 ${count}개를 지울까요?`,
+          onConfirm: clearDone,
+          returnFocus: btn,
+        });
         return;
       }
       const li = btn.closest('.task');
