@@ -318,6 +318,8 @@
       color: var(--text-3);
     }
     .group-title.is-overdue { color: var(--danger); }
+    .group-title.is-done { color: var(--accent); }
+    .group-title.is-done .count { color: var(--accent); opacity: .7; }
     .text-btn {
       height: 32px;
       padding: 0 10px;
@@ -1181,7 +1183,7 @@
           : '';
         return `<section class="group" aria-labelledby="g-${g.key}">
           <div class="group-head">
-            <h2 class="group-title ${g.key === 'overdue' ? 'is-overdue' : ''}" id="g-${g.key}">${g.label} <span class="count">${g.tasks.length}</span></h2>
+            <h2 class="group-title ${g.key === 'overdue' ? 'is-overdue' : isDone ? 'is-done' : ''}" id="g-${g.key}">${g.label} <span class="count">${g.tasks.length}</span></h2>
             ${action}
           </div>
           <ul class="tasks">${g.tasks.map(taskHtml).join('')}</ul>
