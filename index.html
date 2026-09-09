@@ -294,7 +294,7 @@
     }
 
     /* ------------------------------------------------------------ Lists */
-    .lists { padding: 20px 0 8px; }
+    .lists { padding: 20px 0 0; }
     .group { margin-bottom: 20px; }
     .group:last-child { margin-bottom: 0; }
     .group-head {
@@ -598,19 +598,19 @@
     .notice .btn { flex: none; align-self: center; }
     @media (max-width: 639px) {
       .notice { margin-top: 4px; margin-bottom: 8px; }
-      .selbar { top: 4px; margin-top: 8px; }
+      .selbar { bottom: calc(120px + env(safe-area-inset-bottom)); margin: 0 0 8px; }
     }
 
-    /* 선택 액션 바: 항상 노출. 체크(선택)된 항목이 있을 때만 '완료' 활성화 */
+    /* 선택 액션 바: 목록 아래, 화면 하단에 고정(sticky). 체크(선택)된 항목이 있을 때만 '완료' 활성화 */
     .selbar {
       position: sticky;
-      top: 8px;
+      bottom: 12px;
       z-index: 5;
       display: flex;
       align-items: center;
       justify-content: space-between;
       gap: 8px;
-      margin-top: 12px;
+      margin: 4px 0 8px;
       padding: 8px 8px 8px 14px;
       border-radius: var(--radius);
       border: 1px solid var(--line);
@@ -867,6 +867,9 @@
         <button type="button" class="btn btn-primary" id="noticeDismiss">알겠어요</button>
       </div>
 
+      <p class="progress-mobile" id="progressMobile"></p>
+      <section class="lists" id="lists" aria-label="할 일 목록"></section>
+
       <div class="selbar" id="selbar" hidden>
         <span id="selCount" aria-live="polite"></span>
         <div class="selbar-actions">
@@ -874,9 +877,6 @@
           <button type="button" class="btn btn-primary" id="selDone">완료</button>
         </div>
       </div>
-
-      <p class="progress-mobile" id="progressMobile"></p>
-      <section class="lists" id="lists" aria-label="할 일 목록"></section>
 
       <footer class="foot">
         할 일은 이 브라우저에만 저장되고 다른 브라우저에서는 보이지 않아요.
