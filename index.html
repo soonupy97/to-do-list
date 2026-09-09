@@ -481,6 +481,8 @@
     .btn-primary:hover { background: var(--accent-hover); }
     .btn-ghost { color: var(--text-2); }
     .btn-ghost:hover { background: var(--surface-2); color: var(--text); }
+    .btn-outline { border: 1px solid var(--line-strong); background: var(--surface); color: var(--text-2); }
+    .btn-outline:hover { border-color: var(--text-3); background: var(--surface-2); color: var(--text); }
     .btn-danger { background: var(--danger); color: var(--on-danger); }
     .btn-danger:hover { background: var(--danger-hover); }
 
@@ -884,7 +886,7 @@
       <div class="selbar" id="selbar" hidden>
         <span id="selCount" aria-live="polite"></span>
         <div class="selbar-actions">
-          <button type="button" class="btn btn-ghost" id="selClear">선택 해제</button>
+          <button type="button" class="btn btn-outline" id="selClear">선택 해제</button>
           <button type="button" class="btn btn-primary" id="selDone">완료</button>
         </div>
       </div>
