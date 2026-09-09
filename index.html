@@ -407,7 +407,11 @@
       padding: 4px 0;
     }
     .title {
-      display: block;
+      display: -webkit-box; /* 2줄까지만 표시, 3줄째부터 말줄임 */
+      -webkit-box-orient: vertical;
+      -webkit-line-clamp: 2;
+      line-clamp: 2;
+      overflow: hidden;
       max-width: 100%;
       text-align: left;
       font-size: 16px;
@@ -1207,7 +1211,7 @@
            </form>`;
       } else {
         body = `<div class="body">
-             <button type="button" class="title" data-action="edit" title="수정">${safeTitle}</button>
+             <button type="button" class="title" data-action="edit" title="${safeTitle}">${safeTitle}</button>
              ${task.note ? `<p class="note">${escapeHtml(task.note)}</p>` : ''}
              ${task.due ? `<span class="due ${dueClass}">${icon('calendar')}${formatDue(task.due, state.today)}</span>` : ''}
            </div>`;
