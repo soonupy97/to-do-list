@@ -1,8 +1,8 @@
-# 오늘 (Oneul)
+# To Do List
 
 오늘 할 일에 집중하는 가벼운 투두 리스트. 빌드 도구·프레임워크·서버 없이 **`index.html` 한 파일**로 동작합니다.
 
-**데모:** https://soonupy97.github.io/oneul/
+**데모:** https://soonupy97.github.io/to-do-list/
 
 ## 기획 의도
 
@@ -31,8 +31,8 @@
 ## 사용
 
 ```bash
-git clone https://github.com/soonupy97/oneul.git
-cd oneul
+git clone https://github.com/soonupy97/to-do-list.git
+cd to-do-list
 # 그냥 index.html 을 브라우저로 열면 됩니다
 ```
 
@@ -50,7 +50,7 @@ cd oneul
 
 ## 데이터 구조
 
-`localStorage["oneul.v1"]`
+`localStorage["todo.v1"]`
 
 ```json
 {

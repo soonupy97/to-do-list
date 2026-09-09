@@ -3,21 +3,21 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
-  <title>오늘 · 할 일</title>
+  <title>To Do List</title>
   <meta name="description" content="오늘 할 일에 집중하는 가벼운 투두 리스트. 설치나 로그인 없이 브라우저에 저장됩니다.">
   <meta name="color-scheme" content="light dark">
   <meta name="theme-color" content="#f7f7f5">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
-  <meta name="apple-mobile-web-app-title" content="오늘">
-  <meta property="og:title" content="오늘 · 할 일">
+  <meta name="apple-mobile-web-app-title" content="To Do List">
+  <meta property="og:title" content="To Do List">
   <meta property="og:description" content="오늘 할 일에 집중하는 가벼운 투두 리스트.">
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%232f6f4e'/%3E%3Ccircle cx='16' cy='16' r='6' fill='%23f7f7f5'/%3E%3C/svg%3E">
   <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%232f6f4e'/%3E%3Ccircle cx='16' cy='16' r='6' fill='%23f7f7f5'/%3E%3C/svg%3E">
   <!-- 저장된 테마를 첫 페인트 전에 적용 (FOUC 방지) -->
   <script>
     try {
-      var t = localStorage.getItem('oneul.theme');
+      var t = localStorage.getItem('todo.theme') || localStorage.getItem('oneul.theme');
       if (t === 'light' || t === 'dark') document.documentElement.dataset.theme = t;
     } catch (e) {}
   </script>
@@ -724,7 +724,7 @@
   <div class="app">
     <header class="top">
       <div>
-        <h1 class="brand">오늘</h1>
+        <h1 class="brand">To Do List</h1>
         <p class="date" id="todayLabel"></p>
       </div>
       <div class="top-right">
@@ -830,13 +830,18 @@
     }
 
     /* ============================================================ Storage */
-    const STORAGE_KEY = 'oneul.v1';
-    const THEME_KEY = 'oneul.theme';
+    const STORAGE_KEY = 'todo.v1';
+    const THEME_KEY = 'todo.theme';
+    const LEGACY_KEYS = { tasks: 'oneul.v1', theme: 'oneul.theme' }; // 초기 배포명(oneul)에서 이전
     const ID_RE = /^[A-Za-z0-9_-]{1,64}$/;
 
     function loadTasks() {
       try {
-        const raw = localStorage.getItem(STORAGE_KEY);
+        let raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) {
+          raw = localStorage.getItem(LEGACY_KEYS.tasks);
+          if (raw) { localStorage.setItem(STORAGE_KEY, raw); localStorage.removeItem(LEGACY_KEYS.tasks); }
+        }
         if (!raw) return [];
         const data = JSON.parse(raw);
         const list = Array.isArray(data) ? data : Array.isArray(data?.tasks) ? data.tasks : [];
@@ -1436,7 +1441,7 @@
       if (meta) meta.setAttribute('content', effectiveDark ? '#151514' : '#f7f7f5');
     }
     function readTheme() {
-      try { return localStorage.getItem(THEME_KEY) || 'system'; } catch { return 'system'; }
+      try { return localStorage.getItem(THEME_KEY) || localStorage.getItem(LEGACY_KEYS.theme) || 'system'; } catch { return 'system'; }
     }
     els.themeToggle.addEventListener('click', () => {
       const current = readTheme();
