@@ -1,0 +1,1085 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>오늘 · 할 일</title>
+  <meta name="description" content="오늘 할 일에 집중하는 가벼운 투두 리스트. 설치나 로그인 없이 브라우저에 저장됩니다.">
+  <meta name="color-scheme" content="light dark">
+  <meta name="theme-color" content="#f7f7f5" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#151514" media="(prefers-color-scheme: dark)">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="오늘">
+  <meta property="og:title" content="오늘 · 할 일">
+  <meta property="og:description" content="오늘 할 일에 집중하는 가벼운 투두 리스트.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%232f6f4e'/%3E%3Ccircle cx='16' cy='16' r='6' fill='%23f7f7f5'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.2/src/regular/style.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.2/src/bold/style.css">
+  <style>
+    /* ------------------------------------------------------------
+       Tokens
+       - 중립 베이스(warm gray) + 단일 강조색(moss green)
+       - 라운드 규칙: 상호작용 요소 12px, 패널 16px, 칩은 pill
+       - 글자 크기: 짝수 px, 최소 12px
+       ------------------------------------------------------------ */
+    :root {
+      --bg: #f7f7f5;
+      --surface: #fdfdfc;
+      --surface-2: #efefec;
+      --line: #e3e3de;
+      --line-strong: #cfcfc8;
+      --text: #1d1d1b;
+      --text-2: #5f5f59;
+      --text-3: #8c8c85;
+      --accent: #2f6f4e;
+      --accent-hover: #285f43;
+      --accent-soft: #e4efe8;
+      --on-accent: #f7f7f5;
+      --danger: #b4432f;
+      --danger-soft: #f6e6e2;
+      --shadow: 0 1px 2px rgba(29, 29, 27, .05), 0 10px 30px rgba(29, 29, 27, .07);
+      --ring: 0 0 0 3px rgba(47, 111, 78, .28);
+      --toast-bg: #1d1d1b;
+      --toast-text: #f7f7f5;
+      --toast-action: #8fd0ae;
+      --radius: 12px;
+      --radius-panel: 16px;
+      --ease: cubic-bezier(.16, 1, .3, 1);
+      --dur: 220ms;
+    }
+    :root[data-theme="dark"] {
+      --bg: #151514;
+      --surface: #1e1e1c;
+      --surface-2: #272725;
+      --line: #30302d;
+      --line-strong: #44443f;
+      --text: #ecece7;
+      --text-2: #a6a69e;
+      --text-3: #75756e;
+      --accent: #7cc4a0;
+      --accent-hover: #93d1b2;
+      --accent-soft: #1f3128;
+      --on-accent: #10201a;
+      --danger: #e5836f;
+      --danger-soft: #3a2420;
+      --shadow: 0 1px 2px rgba(0, 0, 0, .3), 0 10px 30px rgba(0, 0, 0, .35);
+      --ring: 0 0 0 3px rgba(124, 196, 160, .35);
+      --toast-bg: #ecece7;
+      --toast-text: #151514;
+      --toast-action: #2f6f4e;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root:not([data-theme="light"]) {
+        --bg: #151514;
+        --surface: #1e1e1c;
+        --surface-2: #272725;
+        --line: #30302d;
+        --line-strong: #44443f;
+        --text: #ecece7;
+        --text-2: #a6a69e;
+        --text-3: #75756e;
+        --accent: #7cc4a0;
+        --accent-hover: #93d1b2;
+        --accent-soft: #1f3128;
+        --on-accent: #10201a;
+        --danger: #e5836f;
+        --danger-soft: #3a2420;
+        --shadow: 0 1px 2px rgba(0, 0, 0, .3), 0 10px 30px rgba(0, 0, 0, .35);
+        --ring: 0 0 0 3px rgba(124, 196, 160, .35);
+        --toast-bg: #ecece7;
+        --toast-text: #151514;
+        --toast-action: #2f6f4e;
+      }
+    }
+
+    /* ------------------------------------------------------------ Base */
+    *, *::before, *::after { box-sizing: border-box; }
+    html { -webkit-text-size-adjust: 100%; }
+    body {
+      margin: 0;
+      min-height: 100dvh;
+      background: var(--bg);
+      color: var(--text);
+      font-family: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Segoe UI", Roboto, "Noto Sans KR", sans-serif;
+      font-size: 16px;
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+      overscroll-behavior-y: none;
+    }
+    button, input { font: inherit; color: inherit; }
+    button { cursor: pointer; border: 0; background: none; padding: 0; }
+    button:focus-visible, input:focus-visible, summary:focus-visible, [tabindex]:focus-visible {
+      outline: none;
+      box-shadow: var(--ring);
+    }
+    .sr-only {
+      position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+      overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
+    }
+    i.ph, i.ph-bold { display: inline-block; line-height: 1; }
+
+    /* ------------------------------------------------------------ Layout */
+    .app {
+      max-width: 640px;
+      margin: 0 auto;
+      padding: 0 20px;
+    }
+    .top {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 28px 0 20px;
+    }
+    .brand {
+      margin: 0;
+      font-size: 32px;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      line-height: 1.1;
+    }
+    .date {
+      margin: 6px 0 0;
+      font-size: 14px;
+      color: var(--text-2);
+    }
+    .top-right {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding-bottom: 2px;
+    }
+    .progress {
+      margin: 0;
+      font-size: 14px;
+      color: var(--text-2);
+      text-align: right;
+      white-space: nowrap;
+    }
+    .icon-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 44px;
+      height: 44px;
+      border-radius: var(--radius);
+      color: var(--text-2);
+      font-size: 20px;
+      transition: background-color var(--dur) var(--ease), color var(--dur) var(--ease), transform var(--dur) var(--ease);
+    }
+    .icon-btn:hover { background: var(--surface-2); color: var(--text); }
+    .icon-btn:active { transform: scale(.96); }
+    .icon-btn.sm { width: 40px; height: 40px; font-size: 18px; }
+    .icon-btn.danger:hover { background: var(--danger-soft); color: var(--danger); }
+
+    /* ------------------------------------------------------------ Composer */
+    .composer {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-panel);
+      padding: 12px;
+      box-shadow: var(--shadow);
+    }
+    .composer-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .composer-row input[type="text"] {
+      flex: 1;
+      min-width: 0;
+      height: 48px;
+      padding: 0 14px;
+      border: 1px solid transparent;
+      border-radius: var(--radius);
+      background: var(--surface-2);
+      font-size: 16px;
+      transition: border-color var(--dur) var(--ease), background-color var(--dur) var(--ease);
+    }
+    .composer-row input[type="text"]::placeholder { color: var(--text-3); }
+    .composer-row input[type="text"]:focus { border-color: var(--line-strong); background: var(--surface); }
+    .add-btn {
+      flex: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 48px;
+      height: 48px;
+      border-radius: var(--radius);
+      background: var(--accent);
+      color: var(--on-accent);
+      font-size: 20px;
+      transition: background-color var(--dur) var(--ease), transform var(--dur) var(--ease);
+    }
+    .add-btn:hover { background: var(--accent-hover); }
+    .add-btn:active { transform: scale(.96); }
+    .chips {
+      display: flex;
+      gap: 8px;
+      margin-top: 10px;
+      overflow-x: auto;
+      scrollbar-width: none;
+      -webkit-overflow-scrolling: touch;
+      padding-bottom: 2px;
+    }
+    .chips::-webkit-scrollbar { display: none; }
+    .chip {
+      flex: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      height: 36px;
+      padding: 0 14px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: var(--surface);
+      color: var(--text-2);
+      font-size: 14px;
+      font-weight: 500;
+      position: relative;
+      transition: background-color var(--dur) var(--ease), color var(--dur) var(--ease), border-color var(--dur) var(--ease);
+    }
+    .chip:hover { border-color: var(--line-strong); color: var(--text); }
+    .chip[aria-pressed="true"], .chip.is-active {
+      background: var(--accent-soft);
+      border-color: transparent;
+      color: var(--accent);
+    }
+    .chip-date { cursor: pointer; }
+    .chip-date input[type="date"] {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      opacity: 0;
+      cursor: pointer;
+    }
+    .chip-date:focus-within { box-shadow: var(--ring); }
+    .composer-error {
+      margin: 8px 4px 0;
+      font-size: 14px;
+      color: var(--danger);
+    }
+
+    /* ------------------------------------------------------------ Lists */
+    .lists { padding: 28px 0 40px; }
+    .group { margin-bottom: 28px; }
+    .group-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin: 0 4px 8px;
+    }
+    .group-title {
+      margin: 0;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-2);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .group-title .count {
+      font-weight: 500;
+      color: var(--text-3);
+    }
+    .group-title.is-overdue { color: var(--danger); }
+    .text-btn {
+      height: 32px;
+      padding: 0 10px;
+      border-radius: 8px;
+      font-size: 14px;
+      color: var(--text-2);
+      transition: background-color var(--dur) var(--ease), color var(--dur) var(--ease);
+    }
+    .text-btn:hover { background: var(--surface-2); color: var(--text); }
+    .tasks {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-panel);
+      overflow: hidden;
+    }
+    .task {
+      display: flex;
+      align-items: flex-start;
+      gap: 4px;
+      padding: 6px 8px 6px 4px;
+      min-height: 56px;
+      transition: background-color var(--dur) var(--ease);
+    }
+    .task + .task { border-top: 1px solid var(--line); }
+    .task:hover { background: color-mix(in srgb, var(--surface-2) 55%, var(--surface)); }
+    .check {
+      flex: none;
+      width: 44px;
+      height: 44px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--on-accent);
+      border-radius: var(--radius);
+    }
+    .check::before {
+      content: "";
+      position: absolute;
+      width: 22px;
+      height: 22px;
+      border-radius: 7px;
+      border: 1.5px solid var(--line-strong);
+      background: transparent;
+      transition: background-color var(--dur) var(--ease), border-color var(--dur) var(--ease), transform var(--dur) var(--ease);
+    }
+    .check { position: relative; }
+    .check i {
+      position: relative;
+      font-size: 14px;
+      opacity: 0;
+      transform: scale(.6);
+      transition: opacity var(--dur) var(--ease), transform var(--dur) var(--ease);
+    }
+    .check:hover::before { border-color: var(--accent); }
+    .check[aria-checked="true"]::before {
+      background: var(--accent);
+      border-color: var(--accent);
+    }
+    .check[aria-checked="true"] i { opacity: 1; transform: scale(1); }
+    .check:active::before { transform: scale(.9); }
+    .body {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      min-height: 44px;
+      padding: 4px 0;
+    }
+    .title {
+      display: block;
+      width: 100%;
+      text-align: left;
+      font-size: 16px;
+      line-height: 1.4;
+      padding: 4px 6px;
+      margin: 0 -6px;
+      border-radius: 8px;
+      overflow-wrap: anywhere;
+      transition: color var(--dur) var(--ease), background-color var(--dur) var(--ease);
+    }
+    .title:hover { background: var(--surface-2); }
+    .task.is-done .title {
+      color: var(--text-3);
+      text-decoration: line-through;
+      text-decoration-color: var(--line-strong);
+    }
+    .due {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      margin: 2px 0 0;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text-3);
+    }
+    .due.is-today { color: var(--accent); }
+    .due.is-overdue { color: var(--danger); }
+    .task.is-done .due { color: var(--text-3); }
+    .actions {
+      flex: none;
+      display: flex;
+      align-items: center;
+      align-self: center;
+      opacity: 0;
+      transition: opacity var(--dur) var(--ease);
+    }
+    .task:hover .actions,
+    .task:focus-within .actions { opacity: 1; }
+    @media (hover: none) { .actions { opacity: 1; } }
+
+    /* Inline edit */
+    .edit {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      padding: 4px 4px 6px 0;
+    }
+    .edit-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+    .edit input[type="text"] {
+      flex: 1;
+      min-width: 0;
+      height: 40px;
+      padding: 0 12px;
+      border: 1px solid var(--line-strong);
+      border-radius: 10px;
+      background: var(--surface);
+      font-size: 16px;
+    }
+    .edit input[type="date"] {
+      height: 36px;
+      padding: 0 10px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: var(--surface);
+      font-size: 14px;
+      color: var(--text-2);
+    }
+    .btn {
+      height: 36px;
+      padding: 0 14px;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 600;
+      transition: background-color var(--dur) var(--ease), transform var(--dur) var(--ease);
+    }
+    .btn:active { transform: scale(.97); }
+    .btn-primary { background: var(--accent); color: var(--on-accent); }
+    .btn-primary:hover { background: var(--accent-hover); }
+    .btn-ghost { color: var(--text-2); }
+    .btn-ghost:hover { background: var(--surface-2); color: var(--text); }
+
+    /* Empty & done states */
+    .empty {
+      text-align: center;
+      padding: 56px 16px 40px;
+      color: var(--text-2);
+    }
+    .empty i { font-size: 40px; color: var(--accent); }
+    .empty h2 {
+      margin: 16px 0 6px;
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--text);
+      letter-spacing: -0.01em;
+    }
+    .empty p { margin: 0; font-size: 14px; }
+    .allclear {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 16px 18px;
+      margin-bottom: 28px;
+      border-radius: var(--radius-panel);
+      background: var(--accent-soft);
+      color: var(--accent);
+      font-size: 14px;
+      font-weight: 600;
+    }
+    .allclear i { font-size: 22px; }
+
+    /* Toast */
+    .toast {
+      position: fixed;
+      left: 50%;
+      bottom: calc(24px + env(safe-area-inset-bottom));
+      transform: translateX(-50%);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      max-width: calc(100vw - 32px);
+      padding: 10px 10px 10px 16px;
+      border-radius: var(--radius);
+      background: var(--toast-bg);
+      color: var(--toast-text);
+      font-size: 14px;
+      box-shadow: var(--shadow);
+      z-index: 20;
+      animation: toast-in var(--dur) var(--ease);
+    }
+    .toast[hidden] { display: none; }
+    .toast button {
+      height: 32px;
+      padding: 0 10px;
+      border-radius: 8px;
+      font-weight: 600;
+      color: var(--toast-action);
+      background: color-mix(in srgb, var(--toast-text) 10%, transparent);
+    }
+    .toast button:hover { background: color-mix(in srgb, var(--toast-text) 18%, transparent); }
+    @keyframes toast-in {
+      from { opacity: 0; transform: translate(-50%, 8px); }
+      to { opacity: 1; transform: translate(-50%, 0); }
+    }
+
+    /* Footer */
+    .foot {
+      padding: 0 4px 32px;
+      font-size: 12px;
+      color: var(--text-3);
+    }
+    .foot a { color: inherit; }
+
+    .progress-mobile {
+      display: none;
+      margin: 0 4px 4px;
+      font-size: 14px;
+      color: var(--text-2);
+    }
+
+    /* ------------------------------------------------------------ Mobile
+       < 640px: 입력창을 하단 고정(엄지 영역), 안전 영역 반영, 토스트는 상단 */
+    @media (max-width: 639px) {
+      .app { padding: 0 16px; }
+      .top { padding: 20px 0 8px; align-items: center; }
+      .brand { font-size: 24px; }
+      .progress { display: none; }
+      .progress-mobile { display: block; }
+      .lists { padding: 12px 0 0; }
+      main { padding-bottom: calc(140px + env(safe-area-inset-bottom)); }
+      .composer {
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: 10;
+        border-radius: 0;
+        border-left: 0;
+        border-right: 0;
+        border-bottom: 0;
+        padding: 10px 16px calc(10px + env(safe-area-inset-bottom));
+        box-shadow: 0 -8px 24px rgba(29, 29, 27, .06);
+      }
+      .chips { margin-top: 8px; }
+      .toast {
+        top: calc(12px + env(safe-area-inset-top));
+        bottom: auto;
+        animation-name: toast-in-top;
+      }
+      @keyframes toast-in-top {
+        from { opacity: 0; transform: translate(-50%, -8px); }
+        to { opacity: 1; transform: translate(-50%, 0); }
+      }
+    }
+
+    /* ------------------------------------------------------------ Motion
+       View Transitions: 항목 추가/완료/삭제 시 위치 이동을 부드럽게 표현 */
+    ::view-transition-group(*) { animation-duration: 260ms; animation-timing-function: var(--ease); }
+    ::view-transition-old(root), ::view-transition-new(root) { animation-duration: 180ms; }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { transition-duration: 0ms !important; animation-duration: 0ms !important; }
+      ::view-transition-group(*), ::view-transition-old(*), ::view-transition-new(*) { animation: none !important; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header class="top">
+      <div>
+        <h1 class="brand">오늘</h1>
+        <p class="date" id="todayLabel"></p>
+      </div>
+      <div class="top-right">
+        <p class="progress" id="progress"></p>
+        <button id="themeToggle" class="icon-btn" type="button" aria-label="다크 모드로 전환">
+          <i class="ph ph-moon" aria-hidden="true"></i>
+        </button>
+      </div>
+    </header>
+
+    <main>
+      <form id="composer" class="composer" novalidate>
+        <label for="newTitle" class="sr-only">새 할 일</label>
+        <div class="composer-row">
+          <input id="newTitle" type="text" placeholder="무엇을 할까요?" autocomplete="off" maxlength="200" enterkeyhint="done">
+          <button type="submit" class="add-btn" aria-label="할 일 추가">
+            <i class="ph-bold ph-arrow-up" aria-hidden="true"></i>
+          </button>
+        </div>
+        <div class="chips" id="dueChips" aria-label="마감일 선택">
+          <button type="button" class="chip" data-due="none" aria-pressed="true">날짜 없음</button>
+          <button type="button" class="chip" data-due="today" aria-pressed="false">오늘</button>
+          <button type="button" class="chip" data-due="tomorrow" aria-pressed="false">내일</button>
+          <label class="chip chip-date" id="dateChip">
+            <i class="ph ph-calendar-blank" aria-hidden="true"></i>
+            <span id="pickedDateLabel">날짜 선택</span>
+            <input type="date" id="dueDate" aria-label="마감일 직접 선택">
+          </label>
+        </div>
+        <p class="composer-error" id="composerError" role="alert" hidden>할 일 내용을 입력해 주세요.</p>
+      </form>
+
+      <p class="progress-mobile" id="progressMobile"></p>
+      <section class="lists" id="lists" aria-label="할 일 목록"></section>
+
+      <footer class="foot">
+        데이터는 이 브라우저에만 저장됩니다. 단축키: <kbd>N</kbd> 입력창 이동
+      </footer>
+    </main>
+  </div>
+
+  <div class="toast" id="toast" role="status" hidden>
+    <span id="toastText"></span>
+    <button type="button" id="undoBtn">되돌리기</button>
+  </div>
+  <p class="sr-only" id="announce" aria-live="polite"></p>
+
+  <script>
+  (() => {
+    'use strict';
+
+    /* ============================================================ Dates
+       모든 날짜는 로컬 기준 'YYYY-MM-DD' 문자열로 다룬다. */
+    const WEEKDAYS = ['일', '월', '화', '수', '목', '금', '토'];
+    const pad = (n) => String(n).padStart(2, '0');
+    const toKey = (d) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+    const fromKey = (key) => {
+      const [y, m, d] = key.split('-').map(Number);
+      return new Date(y, m - 1, d);
+    };
+    const todayKey = () => toKey(new Date());
+    const addDays = (key, n) => {
+      const d = fromKey(key);
+      d.setDate(d.getDate() + n);
+      return toKey(d);
+    };
+    const dayDiff = (fromKeyStr, toKeyStr) =>
+      Math.round((fromKey(toKeyStr) - fromKey(fromKeyStr)) / 86400000);
+    const isValidKey = (key) => typeof key === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(key) && !Number.isNaN(fromKey(key).getTime());
+
+    function formatLongDate(key) {
+      const d = fromKey(key);
+      return `${d.getMonth() + 1}월 ${d.getDate()}일 ${WEEKDAYS[d.getDay()]}요일`;
+    }
+    function formatDue(key, today) {
+      const diff = dayDiff(today, key);
+      if (diff === 0) return '오늘';
+      if (diff === 1) return '내일';
+      if (diff === -1) return '어제';
+      if (diff < -1) return `${-diff}일 지남`;
+      const d = fromKey(key);
+      const sameYear = d.getFullYear() === fromKey(today).getFullYear();
+      const base = `${d.getMonth() + 1}월 ${d.getDate()}일 (${WEEKDAYS[d.getDay()]})`;
+      return sameYear ? base : `${d.getFullYear()}년 ${base}`;
+    }
+
+    /* ============================================================ Storage */
+    const STORAGE_KEY = 'oneul.v1';
+    const THEME_KEY = 'oneul.theme';
+
+    function loadTasks() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) return [];
+        const data = JSON.parse(raw);
+        const list = Array.isArray(data) ? data : Array.isArray(data?.tasks) ? data.tasks : [];
+        return list
+          .filter((t) => t && typeof t.id === 'string' && typeof t.title === 'string')
+          .map((t) => ({
+            id: t.id,
+            title: t.title,
+            done: Boolean(t.done),
+            due: isValidKey(t.due) ? t.due : null,
+            createdAt: Number(t.createdAt) || Date.now(),
+            completedAt: t.completedAt ? Number(t.completedAt) : null,
+          }));
+      } catch {
+        return [];
+      }
+    }
+    function saveTasks(tasks) {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify({ tasks }));
+      } catch {
+        /* 저장 공간 부족 등: 메모리 상태는 유지 */
+      }
+    }
+
+    /* ============================================================ State */
+    const uid = () =>
+      (globalThis.crypto && typeof globalThis.crypto.randomUUID === 'function'
+        ? globalThis.crypto.randomUUID()
+        : `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`);
+
+    const state = {
+      tasks: loadTasks(),
+      composerDue: null, // null | 'YYYY-MM-DD'
+      editingId: null,
+      today: todayKey(),
+      undo: null, // { tasks: Task[], timer }
+    };
+
+    /* ============================================================ Grouping */
+    const GROUPS = [
+      { key: 'overdue', label: '지난 마감' },
+      { key: 'today', label: '오늘' },
+      { key: 'upcoming', label: '예정' },
+      { key: 'someday', label: '날짜 없음' },
+      { key: 'done', label: '완료' },
+    ];
+    function groupOf(task, today) {
+      if (task.done) return 'done';
+      if (!task.due) return 'someday';
+      const diff = dayDiff(today, task.due);
+      if (diff < 0) return 'overdue';
+      if (diff === 0) return 'today';
+      return 'upcoming';
+    }
+    function buildGroups(tasks, today) {
+      const buckets = Object.fromEntries(GROUPS.map((g) => [g.key, []]));
+      for (const t of tasks) buckets[groupOf(t, today)].push(t);
+      const byDueThenNewest = (a, b) => {
+        if (a.due && b.due && a.due !== b.due) return a.due < b.due ? -1 : 1;
+        return b.createdAt - a.createdAt;
+      };
+      buckets.overdue.sort(byDueThenNewest);
+      buckets.today.sort((a, b) => b.createdAt - a.createdAt);
+      buckets.upcoming.sort(byDueThenNewest);
+      buckets.someday.sort((a, b) => b.createdAt - a.createdAt);
+      buckets.done.sort((a, b) => (b.completedAt || 0) - (a.completedAt || 0));
+      return GROUPS.map((g) => ({ ...g, tasks: buckets[g.key] })).filter((g) => g.tasks.length > 0);
+    }
+
+    /* ============================================================ DOM refs */
+    const $ = (sel) => document.querySelector(sel);
+    const els = {
+      todayLabel: $('#todayLabel'),
+      progress: $('#progress'),
+      progressMobile: $('#progressMobile'),
+      themeToggle: $('#themeToggle'),
+      composer: $('#composer'),
+      newTitle: $('#newTitle'),
+      dueChips: $('#dueChips'),
+      dateChip: $('#dateChip'),
+      dueDate: $('#dueDate'),
+      pickedDateLabel: $('#pickedDateLabel'),
+      composerError: $('#composerError'),
+      lists: $('#lists'),
+      toast: $('#toast'),
+      toastText: $('#toastText'),
+      undoBtn: $('#undoBtn'),
+      announce: $('#announce'),
+    };
+
+    const escapeHtml = (s) =>
+      s.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+    const reducedMotion = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const cssEscape = (s) => (window.CSS && typeof CSS.escape === 'function') ? CSS.escape(s) : s.replace(/[^a-zA-Z0-9_-]/g, (c) => `\${c}`);
+
+    /* ============================================================ Render */
+    function renderHeader() {
+      els.todayLabel.textContent = formatLongDate(state.today);
+      const todays = state.tasks.filter((t) => t.due === state.today);
+      const active = state.tasks.filter((t) => !t.done);
+      let text;
+      if (todays.length > 0) {
+        const done = todays.filter((t) => t.done).length;
+        text = done === todays.length ? `오늘 ${todays.length}개 모두 완료` : `오늘 ${todays.length}개 중 ${done}개 완료`;
+      } else if (active.length > 0) {
+        text = `남은 할 일 ${active.length}개`;
+      } else {
+        text = '';
+      }
+      els.progress.textContent = text;
+      els.progressMobile.textContent = text;
+    }
+
+    function taskHtml(task) {
+      const editing = state.editingId === task.id;
+      const dueClass = task.due
+        ? dayDiff(state.today, task.due) < 0 && !task.done ? 'is-overdue' : task.due === state.today ? 'is-today' : ''
+        : '';
+      const body = editing
+        ? `<form class="edit" data-edit="${task.id}">
+             <label class="sr-only" for="edit-${task.id}">할 일 수정</label>
+             <div class="edit-row">
+               <input id="edit-${task.id}" type="text" value="${escapeHtml(task.title)}" maxlength="200" autocomplete="off">
+             </div>
+             <div class="edit-row">
+               <input type="date" name="due" value="${task.due || ''}" aria-label="마감일">
+               <button type="submit" class="btn btn-primary">저장</button>
+               <button type="button" class="btn btn-ghost" data-action="cancel">취소</button>
+             </div>
+           </form>`
+        : `<div class="body">
+             <button type="button" class="title" data-action="edit" aria-label="${escapeHtml(task.title)}, 눌러서 수정">${escapeHtml(task.title)}</button>
+             ${task.due ? `<span class="due ${dueClass}"><i class="ph ph-calendar-blank" aria-hidden="true"></i>${formatDue(task.due, state.today)}</span>` : ''}
+           </div>`;
+      return `<li class="task ${task.done ? 'is-done' : ''}" data-id="${task.id}" style="view-transition-name: t-${task.id}">
+        <button type="button" class="check" role="checkbox" aria-checked="${task.done}" data-action="toggle" aria-label="${task.done ? '완료 취소' : '완료 표시'}">
+          <i class="ph-bold ph-check" aria-hidden="true"></i>
+        </button>
+        ${body}
+        ${editing ? '' : `<div class="actions">
+          <button type="button" class="icon-btn sm danger" data-action="delete" aria-label="삭제"><i class="ph ph-trash" aria-hidden="true"></i></button>
+        </div>`}
+      </li>`;
+    }
+
+    function renderLists() {
+      const groups = buildGroups(state.tasks, state.today);
+      if (groups.length === 0) {
+        els.lists.innerHTML = `<div class="empty">
+          <i class="ph ph-sun-horizon" aria-hidden="true"></i>
+          <h2>아직 할 일이 없어요</h2>
+          <p>입력창에 오늘 하고 싶은 일을 하나만 적어보세요.</p>
+        </div>`;
+        return;
+      }
+      const activeCount = state.tasks.filter((t) => !t.done).length;
+      const allClear = activeCount === 0
+        ? `<div class="allclear" style="view-transition-name: allclear"><i class="ph ph-confetti" aria-hidden="true"></i>남은 할 일이 없어요. 오늘도 수고했어요.</div>`
+        : '';
+      const html = groups.map((g) => {
+        const isDone = g.key === 'done';
+        const action = isDone
+          ? `<button type="button" class="text-btn" data-action="clear-done">완료 항목 지우기</button>`
+          : '';
+        return `<section class="group" aria-labelledby="g-${g.key}">
+          <div class="group-head">
+            <h2 class="group-title ${g.key === 'overdue' ? 'is-overdue' : ''}" id="g-${g.key}">${g.label} <span class="count">${g.tasks.length}</span></h2>
+            ${action}
+          </div>
+          <ul class="tasks">${g.tasks.map(taskHtml).join('')}</ul>
+        </section>`;
+      }).join('');
+      els.lists.innerHTML = allClear + html;
+    }
+
+    function renderComposer() {
+      const due = state.composerDue;
+      const isToday = due === state.today;
+      const isTomorrow = due === addDays(state.today, 1);
+      const isCustom = due && !isToday && !isTomorrow;
+      els.dueChips.querySelectorAll('.chip[data-due]').forEach((chip) => {
+        const k = chip.dataset.due;
+        const on = (k === 'none' && !due) || (k === 'today' && isToday) || (k === 'tomorrow' && isTomorrow);
+        chip.setAttribute('aria-pressed', String(on));
+      });
+      els.dateChip.classList.toggle('is-active', Boolean(isCustom));
+      els.pickedDateLabel.textContent = isCustom ? formatDue(due, state.today) : '날짜 선택';
+      els.dueDate.value = isCustom ? due : '';
+    }
+
+    function render() {
+      renderHeader();
+      renderComposer();
+      renderLists();
+    }
+
+    function commit({ animate = true, focusSelector = null } = {}) {
+      saveTasks(state.tasks);
+      const run = () => {
+        render();
+        if (focusSelector) {
+          const el = els.lists.querySelector(focusSelector);
+          if (el) el.focus();
+        }
+      };
+      if (animate && document.startViewTransition && !reducedMotion()) {
+        document.startViewTransition(run);
+      } else {
+        run();
+      }
+    }
+
+    /* ============================================================ Toast / Undo */
+    function showUndo(removed, message) {
+      clearTimeout(state.undo?.timer);
+      state.undo = { tasks: removed, timer: setTimeout(hideToast, 6000) };
+      els.toastText.textContent = message;
+      els.toast.hidden = false;
+    }
+    function hideToast() {
+      clearTimeout(state.undo?.timer);
+      state.undo = null;
+      els.toast.hidden = true;
+    }
+    els.undoBtn.addEventListener('click', () => {
+      if (!state.undo) return;
+      state.tasks = state.tasks.concat(state.undo.tasks);
+      hideToast();
+      commit();
+      announce('되돌렸어요.');
+    });
+
+    function announce(msg) {
+      els.announce.textContent = '';
+      requestAnimationFrame(() => { els.announce.textContent = msg; });
+    }
+
+    /* ============================================================ Actions */
+    function addTask(title, due) {
+      state.tasks.push({ id: uid(), title, done: false, due, createdAt: Date.now(), completedAt: null });
+    }
+    function toggleTask(id) {
+      const t = state.tasks.find((x) => x.id === id);
+      if (!t) return;
+      t.done = !t.done;
+      t.completedAt = t.done ? Date.now() : null;
+    }
+    function deleteTasks(ids) {
+      const set = new Set(ids);
+      const removed = state.tasks.filter((t) => set.has(t.id));
+      state.tasks = state.tasks.filter((t) => !set.has(t.id));
+      return removed;
+    }
+    function updateTask(id, patch) {
+      const t = state.tasks.find((x) => x.id === id);
+      if (t) Object.assign(t, patch);
+    }
+
+    /* ============================================================ Events: composer */
+    els.composer.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const title = els.newTitle.value.trim();
+      if (!title) {
+        els.composerError.hidden = false;
+        els.newTitle.focus();
+        return;
+      }
+      els.composerError.hidden = true;
+      addTask(title, state.composerDue);
+      els.newTitle.value = '';
+      commit();
+      announce('할 일을 추가했어요.');
+      els.newTitle.focus();
+    });
+    els.newTitle.addEventListener('input', () => { els.composerError.hidden = true; });
+
+    els.dueChips.addEventListener('click', (e) => {
+      const chip = e.target.closest('.chip[data-due]');
+      if (!chip) return;
+      const k = chip.dataset.due;
+      state.composerDue = k === 'none' ? null : k === 'today' ? state.today : addDays(state.today, 1);
+      renderComposer();
+      els.newTitle.focus();
+    });
+    els.dueDate.addEventListener('change', () => {
+      state.composerDue = isValidKey(els.dueDate.value) ? els.dueDate.value : null;
+      renderComposer();
+      els.newTitle.focus();
+    });
+
+    /* ============================================================ Events: lists (delegated) */
+    els.lists.addEventListener('click', (e) => {
+      const btn = e.target.closest('[data-action]');
+      if (!btn) return;
+      const action = btn.dataset.action;
+      if (action === 'clear-done') {
+        const ids = state.tasks.filter((t) => t.done).map((t) => t.id);
+        const removed = deleteTasks(ids);
+        commit();
+        showUndo(removed, `완료 항목 ${removed.length}개를 지웠어요.`);
+        return;
+      }
+      const li = btn.closest('.task');
+      if (!li) return;
+      const id = li.dataset.id;
+      if (action === 'toggle') {
+        toggleTask(id);
+        const t = state.tasks.find((x) => x.id === id);
+        commit({ focusSelector: `.task[data-id="${id}"] .check` });
+        announce(t?.done ? '완료했어요.' : '완료를 취소했어요.');
+      } else if (action === 'delete') {
+        const removed = deleteTasks([id]);
+        commit();
+        showUndo(removed, '할 일을 지웠어요.');
+      } else if (action === 'edit') {
+        state.editingId = id;
+        render();
+        const input = els.lists.querySelector(`#edit-${cssEscape(id)}`);
+        if (input) { input.focus(); input.setSelectionRange(input.value.length, input.value.length); }
+      } else if (action === 'cancel') {
+        state.editingId = null;
+        render();
+        els.lists.querySelector(`.task[data-id="${cssEscape(id)}"] .title`)?.focus();
+      }
+    });
+
+    els.lists.addEventListener('submit', (e) => {
+      const form = e.target.closest('form[data-edit]');
+      if (!form) return;
+      e.preventDefault();
+      const id = form.dataset.edit;
+      const title = form.querySelector('input[type="text"]').value.trim();
+      const dueVal = form.querySelector('input[name="due"]').value;
+      if (!title) {
+        // 빈 제목으로 저장하면 삭제로 간주하고 되돌리기를 제공
+        state.editingId = null;
+        const removed = deleteTasks([id]);
+        commit();
+        showUndo(removed, '내용이 비어 할 일을 지웠어요.');
+        return;
+      }
+      updateTask(id, { title, due: isValidKey(dueVal) ? dueVal : null });
+      state.editingId = null;
+      commit({ focusSelector: `.task[data-id="${id}"] .title` });
+      announce('수정했어요.');
+    });
+
+    els.lists.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && state.editingId) {
+        const id = state.editingId;
+        state.editingId = null;
+        render();
+        els.lists.querySelector(`.task[data-id="${cssEscape(id)}"] .title`)?.focus();
+      }
+    });
+
+    /* ============================================================ Keyboard shortcut */
+    document.addEventListener('keydown', (e) => {
+      const target = e.target;
+      const typing = target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable);
+      if (typing || e.metaKey || e.ctrlKey || e.altKey) return;
+      if (e.key === 'n' || e.key === 'N' || e.key === '/') {
+        e.preventDefault();
+        els.newTitle.focus();
+      }
+    });
+
+    /* ============================================================ Theme */
+    function applyTheme(theme) {
+      const root = document.documentElement;
+      if (theme === 'light' || theme === 'dark') root.setAttribute('data-theme', theme);
+      else root.removeAttribute('data-theme');
+      const effectiveDark = theme === 'dark' || (theme !== 'light' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+      els.themeToggle.innerHTML = `<i class="ph ${effectiveDark ? 'ph-sun' : 'ph-moon'}" aria-hidden="true"></i>`;
+      els.themeToggle.setAttribute('aria-label', effectiveDark ? '라이트 모드로 전환' : '다크 모드로 전환');
+    }
+    function readTheme() {
+      try { return localStorage.getItem(THEME_KEY) || 'system'; } catch { return 'system'; }
+    }
+    els.themeToggle.addEventListener('click', () => {
+      const current = readTheme();
+      const effectiveDark = current === 'dark' || (current !== 'light' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+      const next = effectiveDark ? 'light' : 'dark';
+      try { localStorage.setItem(THEME_KEY, next); } catch { /* ignore */ }
+      applyTheme(next);
+    });
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => applyTheme(readTheme()));
+
+    /* ============================================================ Day rollover
+       자정을 넘기거나 탭을 다시 열었을 때 '오늘' 기준을 갱신 */
+    function refreshToday() {
+      const now = todayKey();
+      if (now !== state.today) {
+        state.today = now;
+        render();
+      }
+    }
+    document.addEventListener('visibilitychange', () => { if (!document.hidden) refreshToday(); });
+    setInterval(refreshToday, 60 * 1000);
+
+    /* ============================================================ Multi-tab sync */
+    window.addEventListener('storage', (e) => {
+      if (e.key === STORAGE_KEY) {
+        state.tasks = loadTasks();
+        state.editingId = null;
+        render();
+      }
+    });
+
+    /* ============================================================ Init */
+    applyTheme(readTheme());
+    render();
+  })();
+  </script>
+</body>
+</html>
