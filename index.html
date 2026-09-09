@@ -472,6 +472,8 @@
       padding: 4px 4px 6px 0;
     }
     .edit-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+    .edit-actions { justify-content: space-between; }
+    .edit-btns { display: flex; gap: 6px; margin-left: auto; }
     .edit input[type="text"] {
       flex: none; /* column flex 안에서 flex:1 은 높이를 0 기준으로 잡아 납작해진다 */
       width: 100%;
@@ -1186,13 +1188,15 @@
                <label class="edit-label" for="note-${task.id}">메모</label>
                <textarea id="note-${task.id}" name="note" rows="2" maxlength="1000" placeholder="메모 (선택)">${escapeHtml(draft.note)}</textarea>
              </div>
-             <div class="edit-row">
+             <div class="edit-row edit-actions">
                <input type="hidden" name="due" value="${escapeHtml(draft.due)}">
                <button type="button" class="chip" data-action="edit-date" aria-haspopup="dialog" aria-expanded="false" aria-pressed="${Boolean(draft.due)}">
                  ${icon('calendar')}<span>${draft.due ? formatDue(draft.due, state.today) : '날짜 없음'}</span>
                </button>
-               <button type="submit" class="btn btn-primary">저장</button>
-               <button type="button" class="btn btn-ghost" data-action="cancel">취소</button>
+               <div class="edit-btns">
+                 <button type="button" class="btn btn-outline" data-action="cancel">취소</button>
+                 <button type="submit" class="btn btn-primary">저장</button>
+               </div>
              </div>
            </form>`;
       } else {
