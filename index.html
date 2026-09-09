@@ -295,6 +295,7 @@
 
     /* ------------------------------------------------------------ Lists */
     .lists { padding: 20px 0 0; }
+    .lists > .selbar:last-child { margin-bottom: 0; }
     .group { margin-bottom: 20px; }
     .group:last-child { margin-bottom: 0; }
     .group-head {
@@ -612,7 +613,7 @@
       align-items: center;
       justify-content: space-between;
       gap: 8px;
-      margin: 4px 0 8px;
+      margin: 0 0 20px;
       padding: 8px 8px 8px 14px;
       border-radius: var(--radius);
       border: 1px solid var(--line);
@@ -871,7 +872,6 @@
 
       <p class="progress-mobile" id="progressMobile"></p>
       <section class="lists" id="lists" aria-label="할 일 목록"></section>
-
       <div class="selbar" id="selbar" hidden>
         <span id="selCount" aria-live="polite"></span>
         <div class="selbar-actions">
@@ -1177,11 +1177,13 @@
       for (const id of [...state.selected]) if (!activeIds.has(id)) state.selected.delete(id);
       renderSelbar();
       const groups = buildGroups(state.tasks, state.today);
+      els.selbar.remove(); // innerHTML 교체 전에 분리해 두었다가 제자리에 다시 끼운다
       if (groups.length === 0) {
         els.lists.innerHTML = `<div class="empty">
           <h2>아직 할 일이 없어요</h2>
           <p>오늘 하고 싶은 일을 하나만 적어보세요.</p>
         </div>`;
+        els.lists.append(els.selbar);
         return;
       }
       const activeCount = state.tasks.filter((t) => !t.done).length;
@@ -1190,10 +1192,11 @@
         : '';
       const html = groups.map((g) => {
         const isDone = g.key === 'done';
+        const slot = isDone ? '<div id="selbarSlot"></div>' : '';
         const action = isDone
           ? `<button type="button" class="text-btn" data-action="clear-done">완료 항목 지우기</button>`
           : '';
-        return `<section class="group" aria-labelledby="g-${g.key}">
+        return `${slot}<section class="group" aria-labelledby="g-${g.key}">
           <div class="group-head">
             <h2 class="group-title ${g.key === 'overdue' ? 'is-overdue' : isDone ? 'is-done' : ''}" id="g-${g.key}">${g.label} <span class="count">${g.tasks.length}</span></h2>
             ${action}
@@ -1201,7 +1204,8 @@
           <ul class="tasks">${g.tasks.map(taskHtml).join('')}</ul>
         </section>`;
       }).join('');
-      els.lists.innerHTML = allClear + html;
+      els.lists.innerHTML = allClear + html + (groups.some((g) => g.key === 'done') ? '' : '<div id="selbarSlot"></div>');
+      els.lists.querySelector('#selbarSlot').replaceWith(els.selbar); // 미완료 그룹 아래, 완료 그룹 위
       if (cal.open && cal.anchor && !cal.anchor.isConnected) closeCalendar({ restoreFocus: false });
     }
 
