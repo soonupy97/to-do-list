@@ -473,9 +473,10 @@
     }
     .edit-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
     .edit input[type="text"] {
-      flex: 1;
+      flex: none; /* column flex 안에서 flex:1 은 높이를 0 기준으로 잡아 납작해진다 */
+      width: 100%;
       min-width: 0;
-      height: 40px;
+      height: 44px;
       padding: 0 12px;
       border: 1px solid var(--line-strong);
       border-radius: var(--radius-md);
@@ -484,8 +485,8 @@
     }
     .edit textarea {
       width: 100%;
-      min-height: 64px;
-      padding: 8px 12px;
+      min-height: 72px;
+      padding: 10px 12px;
       border: 1px solid var(--line);
       border-radius: var(--radius-md);
       background: var(--surface);
@@ -504,7 +505,7 @@
       font-weight: 600;
       color: var(--text-2);
     }
-    .edit-field { display: flex; flex-direction: column; }
+    .edit-field { display: flex; flex-direction: column; width: 100%; }
     .btn {
       height: 36px;
       padding: 0 14px;
