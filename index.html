@@ -300,13 +300,12 @@
       border: 1px solid var(--line);
       border-radius: var(--radius-panel);
       background: color-mix(in srgb, var(--surface) 45%, var(--bg));
-      padding: 16px 16px 0;
-      margin-bottom: 24px;
-      /* overflow:hidden 은 sticky 를 깨므로 clip-path 로 모서리를 정리 */
-      clip-path: inset(0 round var(--radius-panel));
+      padding: 16px;
+      margin-bottom: 16px;
     }
     .board .allclear { margin-bottom: 16px; }
     .board .group { margin-bottom: 16px; }
+    .board > :last-child { margin-bottom: 0; }
     .group { margin-bottom: 20px; }
     .group:last-child { margin-bottom: 0; }
     .group-head {
@@ -650,23 +649,25 @@
     .notice .btn { flex: none; align-self: center; }
     @media (max-width: 639px) {
       .notice { margin-top: 4px; margin-bottom: 8px; }
-      .board { padding: 12px 12px 0; margin-bottom: 20px; }
-      .selbar { bottom: calc(120px + env(safe-area-inset-bottom)); margin: 0 -12px; }
+      .board { padding: 12px; margin-bottom: 12px; }
+      .selbar { bottom: calc(120px + env(safe-area-inset-bottom)); margin: 0 0 20px; }
     }
 
-    /* 선택 액션 바: 목록 아래, 화면 하단에 고정(sticky). 체크(선택)된 항목이 있을 때만 '완료' 활성화 */
+    /* 선택 액션 바: 보드와 완료 그룹 사이의 독립 바. 화면 하단에 고정(sticky). 체크(선택)된 항목이 있을 때만 '완료' 활성화 */
     .selbar {
       position: sticky;
-      bottom: 0;
+      bottom: 12px;
       z-index: 5;
       display: flex;
       align-items: center;
       justify-content: space-between;
       gap: 8px;
-      margin: 0 -16px;
-      padding: 10px 10px 10px 16px;
-      border-top: 1px solid var(--line);
+      margin: 0 0 24px;
+      padding: 8px 8px 8px 14px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
       background: var(--surface);
+      box-shadow: var(--shadow);
       font-size: 14px;
       font-weight: 600;
     }
@@ -1268,7 +1269,7 @@
       const activeHtml = groups.filter((g) => g.key !== 'done').map(groupHtml).join('');
       const doneHtml = groups.filter((g) => g.key === 'done').map(groupHtml).join('');
       // 보드(미완료 그룹 + 선택 바) 와 완료 그룹을 분리
-      els.lists.innerHTML = `<div class="board" id="board" style="view-transition-name: board">${allClear}${activeHtml}<div id="selbarSlot"></div></div>${doneHtml}`;
+      els.lists.innerHTML = `<div class="board" id="board" style="view-transition-name: board">${allClear}${activeHtml}</div><div id="selbarSlot"></div>${doneHtml}`;
       els.lists.querySelector('#selbarSlot').replaceWith(els.selbar);
       if (cal.open && cal.anchor && !cal.anchor.isConnected) closeCalendar({ restoreFocus: false });
     }
