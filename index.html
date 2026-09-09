@@ -219,7 +219,7 @@
       background: var(--surface);
       border: 1px solid var(--line);
       border-radius: var(--radius-panel);
-      padding: 12px;
+      padding: 10px;
       box-shadow: var(--shadow);
     }
     .composer-row {
@@ -230,8 +230,8 @@
     .composer-row input[type="text"] {
       flex: 1;
       min-width: 0;
-      height: 48px;
-      padding: 0 14px;
+      height: 40px;
+      padding: 0 12px;
       border: 1px solid transparent;
       border-radius: var(--radius);
       background: var(--surface-2);
@@ -245,20 +245,20 @@
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      width: 48px;
-      height: 48px;
+      width: 40px;
+      height: 40px;
       border-radius: var(--radius);
       background: var(--accent);
       color: var(--on-accent);
-      font-size: 20px;
+      font-size: 18px;
       transition: background-color var(--dur) var(--ease), transform var(--dur) var(--ease);
     }
     .add-btn:hover { background: var(--accent-hover); }
     .add-btn:active { transform: scale(.96); }
     .chips {
       display: flex;
-      gap: 8px;
-      margin-top: 10px;
+      gap: 6px;
+      margin-top: 8px;
       overflow-x: auto;
       scrollbar-width: none;
       padding: 2px;
@@ -271,8 +271,8 @@
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      height: 36px;
-      padding: 0 14px;
+      height: 32px;
+      padding: 0 12px;
       border-radius: 999px;
       border: 1px solid var(--line);
       background: var(--surface);
@@ -614,7 +614,10 @@
       .progress { display: none; }
       .progress-mobile { display: block; }
       .lists { padding: 12px 0 0; }
-      main { padding-bottom: calc(164px + env(safe-area-inset-bottom)); }
+      main { padding-bottom: calc(156px + env(safe-area-inset-bottom)); }
+      .composer-row input[type="text"], .add-btn { height: 44px; }
+      .add-btn { width: 44px; }
+      .chip { height: 36px; }
       .composer {
         position: fixed;
         left: 0;
