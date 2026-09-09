@@ -596,7 +596,32 @@
     .notice .btn { flex: none; align-self: center; }
     @media (max-width: 639px) {
       .notice { margin-top: 4px; margin-bottom: 8px; }
+      .selbar { top: 4px; margin-top: 8px; }
     }
+
+    /* 선택 액션 바: 체크(선택)된 항목이 있을 때만 나타나 '완료'로 확정 */
+    .selbar {
+      position: sticky;
+      top: 8px;
+      z-index: 5;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin-top: 12px;
+      padding: 8px 8px 8px 14px;
+      border-radius: var(--radius);
+      border: 1px solid var(--line);
+      background: var(--surface);
+      box-shadow: var(--shadow);
+      font-size: 14px;
+      font-weight: 600;
+      animation: cal-in 180ms var(--ease);
+    }
+    .selbar[hidden] { display: none; }
+    .selbar-actions { display: flex; gap: 6px; }
+    .task.is-selected { background: var(--accent-soft); }
+    .task.is-selected:hover { background: var(--accent-soft); }
 
     .progress-mobile {
       display: none;
@@ -833,6 +858,14 @@
         <button type="button" class="btn btn-primary" id="noticeDismiss">알겠어요</button>
       </div>
 
+      <div class="selbar" id="selbar" hidden>
+        <span id="selCount" aria-live="polite"></span>
+        <div class="selbar-actions">
+          <button type="button" class="btn btn-ghost" id="selClear">선택 해제</button>
+          <button type="button" class="btn btn-primary" id="selDone">완료</button>
+        </div>
+      </div>
+
       <p class="progress-mobile" id="progressMobile"></p>
       <section class="lists" id="lists" aria-label="할 일 목록"></section>
 
@@ -967,6 +1000,7 @@
       composerDue: null, // null | 'today' | 'tomorrow' | 'YYYY-MM-DD' (자정을 넘겨도 의미가 유지되도록 토큰으로 보관)
       editingId: null,
       editDraft: null, // 편집 중 재렌더 시 입력값 보존 { title, due }
+      selected: new Set(), // 체크(선택)된 미완료 항목 id. 저장하지 않음
       today: todayKey(),
       undo: null, // { tasks: Task[], timer }
     };
@@ -1032,6 +1066,10 @@
       announce: $('#announce'),
       notice: $('#notice'),
       noticeDismiss: $('#noticeDismiss'),
+      selbar: $('#selbar'),
+      selCount: $('#selCount'),
+      selClear: $('#selClear'),
+      selDone: $('#selDone'),
       confirm: $('#confirm'),
       confirmTitle: $('#confirmTitle'),
       confirmCancel: $('#confirmCancel'),
@@ -1091,8 +1129,9 @@
              ${task.due ? `<span class="due ${dueClass}">${icon('calendar')}${formatDue(task.due, state.today)}</span>` : ''}
            </div>`;
       }
-      return `<li class="task ${task.done ? 'is-done' : ''}" data-id="${task.id}" style="view-transition-name: t-${task.id}">
-        <button type="button" class="check" role="checkbox" aria-checked="${task.done}" data-action="toggle" aria-label="${safeTitle}">
+      const selected = !task.done && state.selected.has(task.id);
+      return `<li class="task ${task.done ? 'is-done' : ''} ${selected ? 'is-selected' : ''}" data-id="${task.id}" style="view-transition-name: t-${task.id}">
+        <button type="button" class="check" role="checkbox" aria-checked="${task.done || selected}" data-action="toggle" aria-label="${safeTitle}${task.done ? ', 완료 취소' : ', 선택'}">
           ${icon('check')}
         </button>
         ${body}
@@ -1112,8 +1151,17 @@
       };
     }
 
+    function renderSelbar() {
+      const n = state.selected.size;
+      els.selbar.hidden = n === 0;
+      els.selCount.textContent = n > 0 ? `${n}개 선택` : '';
+    }
+
     function renderLists() {
       captureEditDraft();
+      const activeIds = new Set(state.tasks.filter((t) => !t.done).map((t) => t.id));
+      for (const id of [...state.selected]) if (!activeIds.has(id)) state.selected.delete(id);
+      renderSelbar();
       const groups = buildGroups(state.tasks, state.today);
       if (groups.length === 0) {
         els.lists.innerHTML = `<div class="empty">
@@ -1422,6 +1470,22 @@
       if (e.relatedTarget && !els.cal.contains(e.relatedTarget)) closeCalendar({ restoreFocus: false });
     });
 
+    /* ============================================================ Selection bar */
+    els.selDone.addEventListener('click', () => {
+      const ids = [...state.selected];
+      if (ids.length === 0) return;
+      const now = Date.now();
+      for (const t of state.tasks) if (ids.includes(t.id)) { t.done = true; t.completedAt = now; }
+      state.selected.clear();
+      commit({ focusEl: els.newTitle });
+      announce(`${ids.length}개를 완료했어요.`);
+    });
+    els.selClear.addEventListener('click', () => {
+      state.selected.clear();
+      render();
+      els.newTitle.focus();
+    });
+
     /* ============================================================ Confirm dialog
        네이티브 confirm() 대신 <dialog>. 취소가 기본 포커스, Esc/백드롭으로 닫힘. */
     function askConfirm({ title, onConfirm, returnFocus }) {
@@ -1477,10 +1541,20 @@
       if (!li) return;
       const id = li.dataset.id;
       if (action === 'toggle') {
-        toggleTask(id);
         const t = state.tasks.find((x) => x.id === id);
-        commit({ focusSelector: `${taskSel(id)} .check` });
-        announce(t?.done ? '완료했어요.' : '완료를 취소했어요.');
+        if (!t) return;
+        if (t.done) {
+          // 완료 목록의 체크를 누르면 바로 완료 취소
+          toggleTask(id);
+          commit({ focusSelector: `${taskSel(id)} .check` });
+          announce('완료를 취소했어요.');
+        } else {
+          // 미완료 항목의 체크는 '선택'. 완료 버튼을 눌러야 완료 목록으로 이동
+          if (state.selected.has(id)) state.selected.delete(id); else state.selected.add(id);
+          render();
+          els.lists.querySelector(`${taskSel(id)} .check`)?.focus();
+          announce(state.selected.has(id) ? `선택했어요. ${state.selected.size}개 선택됨` : '선택을 해제했어요.');
+        }
       } else if (action === 'delete') {
         const focusSelector = neighborFocus(li);
         const removed = deleteTasks([id]);
